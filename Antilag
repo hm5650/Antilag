@@ -1,0 +1,267 @@
+for i,v in next, (workspace:GetDescendants()) do
+ if v:IsA("Part") then v.Material = Enum.Material.SmoothPlastic
+ end
+ end
+task.wait()
+local a = tick()
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+wait(.1)
+sethiddenproperty(game.Lighting, "Technology", 2)
+sethiddenproperty(workspace:FindFirstChildOfClass("Terrain"), "Decoration", false)
+settings().Rendering.QualityLevel = 1
+setsimulationradius(0,0)
+game.Lighting.GlobalShadows = false
+game.Lighting.FogEnd = 9e9
+workspace:FindFirstChildOfClass("Terrain").Elasticity = 0
+for b, c in pairs(game:GetDescendants()) do
+    task.spawn(
+        function()
+            wait()
+            if c:IsA("DataModelMesh") then
+                sethiddenproperty(c, "LODX", Enum.LevelOfDetailSetting.Low).
+                sethiddenproperty(c, "LODY", Enum.LevelOfDetailSetting.Low)
+                c.CollisionFidelity = "Hull"
+            elseif c:IsA("UnionOperation") then
+                c.CollisionFidelity = "Hull"
+            elseif c:IsA("Model") then
+                sethiddenproperty(c, "LevelOfDetail", 1)
+            elseif c:IsA("BasePart") then
+                c.Reflectance = 0
+                c.CastShadow = false
+            end
+        end
+    )
+end
+for d, e in pairs(game.Lighting:GetChildren()) do
+    if e:IsA("PostEffect") then
+        e.Enabled = false
+    end
+end
+warn("Low graphics loaded! (" .. math.floor(tick() - a) .. "s)")
+task.wait()
+_G.Ignore = {}
+_G.Settings = {
+    Players = {
+        ["Ignore Me"] = true,
+        ["Ignore Others"] = true,
+        ["Ignore Tools"] = true
+    },
+    Meshes = {
+        NoMesh = false,
+        NoTexture = false,
+        Destroy = false
+    },
+    Images = {
+        Invisible = true,
+        Destroy = false
+    },
+    Explosions = {
+        Smaller = true,
+        Invisible = false, -- Not for PVP games
+        Destroy = false -- Not for PVP games
+    },
+    Particles = {
+        Invisible = true,
+        Destroy = false
+    },
+    TextLabels = {
+        LowerQuality = true,
+        Invisible = false,
+        Destroy = false
+    },
+    MeshParts = {
+        LowerQuality = true,
+        Invisible = false,
+        NoTexture = false,
+        NoMesh = false,
+        Destroy = false
+    },
+    Other = {
+        ["FPS Cap"] = 240, -- true to uncap
+        ["No Camera Effects"] = true,
+        ["No Clothes"] = true,
+        ["Low Water Graphics"] = true,
+        ["No Shadows"] = true,
+        ["Low Rendering"] = true,    
+        ["Low Quality Parts"] = true,
+        ["Low Quality Models"] = true,
+        ["Reset Materials"] = true,
+    }
+}
+task.wait()
+local ToDisable = {
+	Textures = true,
+	VisualEffects = true,
+	Parts = true,
+	Particles = true,
+	Sky = true
+}
+
+local ToEnable = {
+	FullBright = false
+}
+
+local Stuff = {}
+
+for _, v in next, game:GetDescendants() do
+	if ToDisable.Parts then
+		if v:IsA("Part") or v:IsA("Union") or v:IsA("BasePart") then
+			v.Material = Enum.Material.SmoothPlastic
+			table.insert(Stuff, 1, v)
+		end
+	end
+	
+	if ToDisable.Particles then
+		if v:IsA("ParticleEmitter") or v:IsA("Smoke") or v:IsA("Explosion") or v:IsA("Sparkles") or v:IsA("Fire") then
+			v.Enabled = false
+			table.insert(Stuff, 1, v)
+		end
+	end
+	
+	if ToDisable.VisualEffects then
+		if v:IsA("BloomEffect") or v:IsA("BlurEffect") or v:IsA("DepthOfFieldEffect") or v:IsA("SunRaysEffect") then
+			v.Enabled = false
+			table.insert(Stuff, 1, v)
+		end
+	end
+	
+	if ToDisable.Textures then
+		if v:IsA("Decal") or v:IsA("Texture") then
+			v.Texture = ""
+			table.insert(Stuff, 1, v)
+		end
+	end
+	
+	if ToDisable.Sky then
+		if v:IsA("Sky") then
+			v.Parent = nil
+			table.insert(Stuff, 1, v)
+		end
+	end
+end
+
+game:GetService("TestService"):Message("Effects Disabler Script : Successfully disabled "..#Stuff.." assets / effects. Settings :")
+
+for i, v in next, ToDisable do
+	print(tostring(i)..": "..tostring(v))
+end
+
+if ToEnable.FullBright then
+    local Lighting = game:GetService("Lighting")
+    
+    Lighting.FogColor = Color3.fromRGB(255, 255, 255)
+    Lighting.FogEnd = math.huge
+    Lighting.FogStart = math.huge
+    Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+    Lighting.Brightness = 5
+    Lighting.ColorShift_Bottom = Color3.fromRGB(255, 255, 255)
+    Lighting.ColorShift_Top = Color3.fromRGB(255, 255, 255)
+    Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+    Lighting.Outlines = true
+end
+task.wait()
+local function removeParticles(parent)
+    for _, child in ipairs(parent:GetDescendants()) do
+        if child:IsA("ParticleEmitter") or child:IsA("Trail") or child:IsA("Beam") then
+            child:Destroy() -- Remove the particle effect
+        end
+    end
+end
+
+-- Apply to the entire game
+removeParticles(game:GetService("Workspace"))
+removeParticles(game:GetService("Lighting"))
+removeParticles(game:GetService("ReplicatedStorage"))
+removeParticles(game:GetService("ServerStorage"))
+
+print("Particles removed to reduce lag!")
+task.wait()
+-- AntiLag Script for Roblox
+-- Prevents rendering behind the player and adjusts for camera zoom
+
+-- Function to optimize parts and materials
+local function optimizeParts()
+    for _, v in ipairs(workspace:GetDescendants()) do
+        if v:IsA("Part") then
+            v.Material = Enum.Material.SmoothPlastic
+            v.CastShadow = false
+        elseif v:IsA("DataModelMesh") then
+            sethiddenproperty(v, "LODX", Enum.LevelOfDetailSetting.Low)
+            sethiddenproperty(v, "LODY", Enum.LevelOfDetailSetting.Low)
+            v.CollisionFidelity = "Hull"
+        elseif v:IsA("UnionOperation") then
+            v.CollisionFidelity = "Hull"
+        elseif v:IsA("Model") then
+            sethiddenproperty(v, "LevelOfDetail", 1)
+        end
+    end
+end
+
+-- Function to disable unnecessary effects
+local function disableEffects()
+    for _, v in ipairs(game.Lighting:GetChildren()) do
+        if v:IsA("PostEffect") then
+            v.Enabled = false
+        end
+    end
+end
+
+-- Function to remove particles
+local function removeParticles(parent)
+    for _, child in ipairs(parent:GetDescendants()) do
+        if child:IsA("ParticleEmitter") or child:IsA("Trail") or child:IsA("Beam") then
+            child:Destroy()
+        end
+    end
+end
+
+-- Function to adjust camera rendering
+local function adjustCameraRendering()
+    local camera = workspace.CurrentCamera
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+        local zoom = (camera.CFrame.Position - character.PrimaryPart.Position).Magnitude
+        if zoom > 50 then
+            setsimulationradius(50, 50) -- Adjust simulation radius based on zoom
+        else
+            setsimulationradius(0, 0)
+        end
+    end)
+end
+
+-- Main script execution
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+task.wait()
+
+-- Optimize parts and materials
+optimizeParts()
+
+-- Disable unnecessary effects
+disableEffects()
+
+-- Remove particles
+removeParticles(workspace)
+removeParticles(game.Lighting)
+removeParticles(game.ReplicatedStorage)
+removeParticles(game.ServerStorage)
+
+-- Adjust camera rendering
+adjustCameraRendering()
+
+-- Set global settings
+sethiddenproperty(game.Lighting, "Technology", 2)
+sethiddenproperty(workspace:FindFirstChildOfClass("Terrain"), "Decoration", false)
+settings().Rendering.QualityLevel = 1
+setsimulationradius(0, 0)
+game.Lighting.GlobalShadows = false
+game.Lighting.FogEnd = 9e9
+workspace:FindFirstChildOfClass("Terrain").Elasticity = 0
+
+warn("AntiLag script loaded!")
